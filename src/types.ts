@@ -7,7 +7,7 @@ export interface Observer {
 export interface Observable {
     _observers: Observer[];
 
-    addObserver(...subject: Observer[]): void;
+    addObserver(...subjects: Observer[]): void;
 
     notifyObserver(issue: Issue): void;
 }
