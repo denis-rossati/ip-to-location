@@ -47,7 +47,7 @@ describe('The LocationConsumer class', () => {
 
 			const locationConsumer = new LocationConsumer(kafkaClientMock);
 			locationConsumer.addObserver(observerSpy1, observerSpy2);
-			locationConsumer.notifyObserver(issue);
+			locationConsumer.notifyObservers(issue);
 
 			expect(observerSpy1.update).toBeCalledWith(issue);
 			expect(observerSpy1.update).toBeCalledTimes(1);
