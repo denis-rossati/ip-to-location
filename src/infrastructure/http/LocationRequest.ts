@@ -1,6 +1,6 @@
 import * as net from 'net';
 import {API_KEY, API_URL} from '../../../server/constants';
-import {OutputMessage} from '../../types';
+import {ExternalResponse} from '../../types';
 
 export class LocationRequest {
 	private static mountLocationUrl(ip: string, requestedFields: string[]) {
@@ -17,15 +17,15 @@ export class LocationRequest {
 
 	private static isValidResponse(payload: Map<string, unknown>, requestedFields: string[]) {
 		// Every key in payload should've been requested and every requested field must be in the payload.
-		return Array.from(payload.keys()).every((key: string) => requestedFields.includes(key))
-			&& requestedFields.every((field) => payload.get(field));
+		return Object.keys(payload).every((key: string) => requestedFields.includes(key))
+			&& requestedFields.every((field) => field in payload);
 	}
 
-	private static mountOutput(ip: string, payload: Map<string, unknown>, fields: string[]): Partial<OutputMessage> {
+	private static mountOutput(ip: string, payload: Map<string, unknown>, fields: string[]): ExternalResponse {
 		const sanitizedMap = new Map();
 
 		fields.forEach((key) => {
-			const sanitizedKey = key.replace(/_name/, '')
+			const sanitizedKey = key.replace(/_name/, '');
 			sanitizedMap.set(sanitizedKey, payload.get(key));
 		});
 
@@ -37,9 +37,10 @@ export class LocationRequest {
 			return null;
 		}
 
-		const responseFields = ['ip', 'latitude', 'longitude', 'country_name', 'region_name', 'city', ...requestedFields];
+		// For faster external calls, ipstack let you choose a range of fields returned in the response.
+		const responseFields = ['latitude', 'longitude', 'country_name', 'region_name', 'city', ...requestedFields];
 
-		const requestUrl = LocationRequest.mountLocationUrl(ip, requestedFields);
+		const requestUrl = LocationRequest.mountLocationUrl(ip, responseFields);
 
 		const response: Response = await fetch(requestUrl).catch((reason) => {
 			throw new Error(reason);
@@ -50,17 +51,15 @@ export class LocationRequest {
 			// We cannot predict an response from aexternal request.
 			// Therefore, the type hint must be generic and the response must be validated.
 			const payload = new Map(entries);
-			const isValidResponse = LocationRequest.isValidResponse(payload, requestedFields);
+			const isValidResponse = LocationRequest.isValidResponse(payload, responseFields);
 
 			if (isValidResponse) {
-				return LocationRequest.mountOutput(ip, payload, requestedFields);
+				return LocationRequest.mountOutput(ip, payload, responseFields);
 			}
 
 			return null;
 		} catch (e) {
-			throw new Error(e as string);
+			throw new Error(JSON.stringify(e));
 		}
 	}
-
-
 }
