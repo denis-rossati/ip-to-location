@@ -17,8 +17,8 @@ export class LocationRequest {
 
 	private static isValidResponse(payload: Map<string, unknown>, requestedFields: string[]) {
 		// Every key in payload should've been requested and every requested field must be in the payload.
-		return Object.keys(payload).every((key: string) => requestedFields.includes(key))
-			&& requestedFields.every((field) => field in payload);
+		return Array.from(payload.keys()).every((key: string) => requestedFields.includes(key))
+			&& requestedFields.every((field) => payload.has(field));
 	}
 
 	private static mountOutput(ip: string, payload: Map<string, unknown>, fields: string[]): ExternalResponse {
@@ -48,6 +48,7 @@ export class LocationRequest {
 
 		try {
 			const entries = Object.entries(await response.json());
+
 			// We cannot predict an response from aexternal request.
 			// Therefore, the type hint must be generic and the response must be validated.
 			const payload = new Map(entries);

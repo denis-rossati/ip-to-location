@@ -1,4 +1,5 @@
-import {Issue, Observable, Observer} from '../types';
+import {Issue, Observable, Observer, OutputMessage} from '../types';
+import {LocationRequest} from '../infrastructure/http/LocationRequest';
 
 export class LocationMediator implements Observer, Observable {
 	_observers: Observer[] = [];
@@ -19,10 +20,16 @@ export class LocationMediator implements Observer, Observable {
 		}
 	}
 
-	private async generateLocation({ip, clientId, timestamp}: Issue) {
+	private async generateLocation({ip, clientId, timestamp}: Issue): Promise<OutputMessage | null> {
 		// @TODO: check for cached response before fetching location
 
 		const location = await LocationRequest.fetch(ip);
+
+		if (location !== null) {
+			return {...location, clientId, timestamp, ip};
+		}
+
+		return null;
 	}
 
 	get observers() {
