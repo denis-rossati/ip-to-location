@@ -19,7 +19,7 @@ describe('The LocationConsumer class', () => {
         jest.clearAllMocks();
     });
 
-    describe('The observable methods.', () => {
+    describe('observable interface methods.', () => {
         let observerSpy1: Observer;
         let observerSpy2: Observer;
 
@@ -58,7 +58,7 @@ describe('The LocationConsumer class', () => {
         });
     });
 
-    describe('connect', () => {
+    describe('connect method.', () => {
         afterEach(() => {
             jest.clearAllMocks();
         });
@@ -112,7 +112,7 @@ describe('The LocationConsumer class', () => {
         });
     });
 
-    describe('run', () => {
+    describe('run method.', () => {
         it('Should throw an error if it is not connected to any topic.', (done) => {
             const locationConsumer = new LocationConsumer(kafkaClientMock);
 
@@ -147,7 +147,7 @@ describe('The LocationConsumer class', () => {
         })
     });
 
-    describe('client', () => {
+    describe('client method.', () => {
         it('Should throw an error if a client is not defined', () => {
             expect(() => LocationConsumer.prototype.client)
                 .toThrowError('A Kafka client must be supplied through class construction.');
@@ -161,7 +161,7 @@ describe('The LocationConsumer class', () => {
         });
     });
 
-    describe('consumer', () => {
+    describe('consumer method.', () => {
         it('Should throw an error if a consumer is not defined', (done) => {
             const expectedError = 'A Kafka consumer must be supplied through class construction.';
 

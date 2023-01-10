@@ -20,7 +20,7 @@ describe('The LocationProducer class', () => {
         jest.clearAllMocks();
     });
 
-    describe('connect', () => {
+    describe('connect method.', () => {
         afterEach(() => {
             jest.clearAllMocks();
         });
@@ -63,7 +63,7 @@ describe('The LocationProducer class', () => {
             expect(actual).toEqual(expected);
         });
 
-        it('Should use legacy partitioner as partitioner creator', async () => {
+        it('Should use legacy partitioner as partitioner creator.', async () => {
             const locationProducer = new LocationProducer(kafkaClientMock);
 
             await locationProducer.connect();
@@ -75,8 +75,8 @@ describe('The LocationProducer class', () => {
         });
     });
 
-    describe('The observer methods.', () => {
-        describe('update', () => {
+    describe('observer interface methods.', () => {
+        describe('update method.', () => {
             it('Should throw an error if producer is not connected.', () => {
                 const locationProducer = new LocationProducer(kafkaClientMock);
 
@@ -106,6 +106,5 @@ describe('The LocationProducer class', () => {
                 expect(kafkaClientMock.producer().send).toBeCalledTimes(5);
             });
         });
-
     });
 });
