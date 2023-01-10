@@ -1,5 +1,5 @@
 import {Kafka, Partitioners, Producer} from "kafkajs";
-import {Observer} from "../../types";
+import {Observer, OutputMessage} from "../../types";
 
 export class LocationProducer implements Observer {
     private readonly _client?: Kafka;
@@ -68,5 +68,18 @@ export class LocationProducer implements Observer {
         } catch (e) {
             throw new Error(e as string);
         }
+    }
+
+    async update(issue: OutputMessage) {
+        if (!this.isConnected) {
+            throw new Error('The producer must be connected before writing to a topic.');
+        }
+
+        this.topics.forEach((topic) => {
+            this.producer.send({
+                topic: topic,
+                messages: [{value: Buffer.from(JSON.stringify(issue))}],
+            })
+        });
     }
 }
