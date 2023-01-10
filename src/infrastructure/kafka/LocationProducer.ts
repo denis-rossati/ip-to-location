@@ -4,26 +4,30 @@ import {Observer, OutputMessage} from '../../types';
 export class LocationProducer implements Observer {
 	private readonly _client?: Kafka;
 
+	private readonly _producer?: Producer;
+
 	private _isConnected = false;
 
 	private _topics: string[] = [];
 
-	private _producer?: Producer;
-
 	constructor(client: Kafka) {
 		this._client = client;
+
+		this._producer = this._client.producer({
+			createPartitioner: Partitioners.LegacyPartitioner,
+		});
 	}
 
 	async connect(topic?: string) {
+		if (topic !== undefined) {
+			this.topics = [...this.topics, topic];
+		}
+
+		if (this.client === undefined || this.producer === undefined) {
+			throw new Error('A Kafka client must be supplied through connection.');
+		}
+
 		try {
-			if (topic !== undefined) {
-				this.topics = [...this.topics, topic];
-			}
-
-			this.producer = this.client.producer({
-				createPartitioner: Partitioners.LegacyPartitioner,
-			});
-
 			await this.producer.connect();
 
 			this.isConnected = true;
@@ -35,7 +39,7 @@ export class LocationProducer implements Observer {
 	}
 
 	async update(issue: OutputMessage) {
-		if (!this.isConnected) {
+		if (!this.isConnected || this.producer === undefined) {
 			throw new Error('The producer must be connected before writing to a topic.');
 		}
 
@@ -64,22 +68,10 @@ export class LocationProducer implements Observer {
 	}
 
 	private get producer() {
-		if (this._producer === undefined) {
-			throw new Error('A Kafka producer must be supplied through connection.');
-		}
-
 		return this._producer;
 	}
 
-	private set producer(producer: Producer) {
-		this._producer = producer;
-	}
-
 	private get client() {
-		if (this._client === undefined) {
-			throw new Error('A Kafka client must be supplied through connection.');
-		}
-
 		return this._client;
 	}
 }

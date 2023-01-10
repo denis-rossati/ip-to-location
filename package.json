@@ -4,7 +4,8 @@
   "description": "A Kafka stream that translates an IP into a location.",
   "main": "build/server/run.js",
   "scripts": {
-    "test": "jest tests",
+    "test": "ENV=dev jest tests",
+    "test:coverage": "ENV=dev jest --coverage",
     "lint": "eslint -c .eslintrc.js src server tests"
   },
   "repository": {
