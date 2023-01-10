@@ -1,85 +1,85 @@
-import {Kafka, Partitioners, Producer} from "kafkajs";
-import {Observer, OutputMessage} from "../../types";
+import {Kafka, Partitioners, Producer} from 'kafkajs';
+import {Observer, OutputMessage} from '../../types';
 
 export class LocationProducer implements Observer {
-    private readonly _client?: Kafka;
+	private readonly _client?: Kafka;
 
-    constructor(client: Kafka) {
-        this._client = client;
-    }
+	private _isConnected = false;
 
-    private _isConnected = false;
+	private _topics: string[] = [];
 
-    get isConnected(): boolean {
-        return this._isConnected;
-    }
+	private _producer?: Producer;
 
-    set isConnected(value: boolean) {
-        this._isConnected = value;
-    }
+	constructor(client: Kafka) {
+		this._client = client;
+	}
 
-    private _topics: string[] = [];
+	async connect(topic?: string) {
+		try {
+			if (topic !== undefined) {
+				this.topics = [...this.topics, topic];
+			}
 
-    get topics() {
-        return this._topics;
-    }
+			this.producer = this.client.producer({
+				createPartitioner: Partitioners.LegacyPartitioner,
+			});
 
-    set topics(topics: string[]) {
-        this._topics = topics;
-    }
+			await this.producer.connect();
 
-    private _producer?: Producer;
+			this.isConnected = true;
 
-    private get producer() {
-        if (this._producer === undefined) {
-            throw new Error('A Kafka producer must be supplied through connection.');
-        }
+			return this;
+		} catch (e) {
+			throw new Error(e as string);
+		}
+	}
 
-        return this._producer;
-    }
+	async update(issue: OutputMessage) {
+		if (!this.isConnected) {
+			throw new Error('The producer must be connected before writing to a topic.');
+		}
 
-    private set producer(producer: Producer) {
-        this._producer = producer;
-    }
+		this.topics.forEach((topic) => {
+			this.producer.send({
+				topic: topic,
+				messages: [{value: Buffer.from(JSON.stringify(issue))}],
+			});
+		});
+	}
 
-    private get client() {
-        if (this._client === undefined) {
-            throw new Error('A Kafka client must be supplied through connection.');
-        }
+	get isConnected(): boolean {
+		return this._isConnected;
+	}
 
-        return this._client;
-    }
+	set isConnected(value: boolean) {
+		this._isConnected = value;
+	}
 
-    async connect(topic?: string) {
-        try {
-            if (topic !== undefined) {
-                this.topics = [...this.topics, topic];
-            }
+	get topics() {
+		return this._topics;
+	}
 
-            this.producer = this.client.producer({
-                createPartitioner: Partitioners.LegacyPartitioner,
-            });
+	set topics(topics: string[]) {
+		this._topics = topics;
+	}
 
-            await this.producer.connect();
+	private get producer() {
+		if (this._producer === undefined) {
+			throw new Error('A Kafka producer must be supplied through connection.');
+		}
 
-            this.isConnected = true;
+		return this._producer;
+	}
 
-            return this;
-        } catch (e) {
-            throw new Error(e as string);
-        }
-    }
+	private set producer(producer: Producer) {
+		this._producer = producer;
+	}
 
-    async update(issue: OutputMessage) {
-        if (!this.isConnected) {
-            throw new Error('The producer must be connected before writing to a topic.');
-        }
+	private get client() {
+		if (this._client === undefined) {
+			throw new Error('A Kafka client must be supplied through connection.');
+		}
 
-        this.topics.forEach((topic) => {
-            this.producer.send({
-                topic: topic,
-                messages: [{value: Buffer.from(JSON.stringify(issue))}],
-            })
-        });
-    }
+		return this._client;
+	}
 }
