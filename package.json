@@ -5,7 +5,7 @@
   "main": "build/server/run.js",
   "scripts": {
     "test": "jest tests",
-    "lint": "eslint -c .eslintrc.js"
+    "lint": "eslint -c .eslintrc.js src server tests"
   },
   "repository": {
     "type": "git",
