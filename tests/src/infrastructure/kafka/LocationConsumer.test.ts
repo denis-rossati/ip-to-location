@@ -39,7 +39,7 @@ describe('The LocationConsumer class', () => {
             const actual = locationConsumer.observers;
             const expected = [observerSpy1, observerSpy2];
 
-            exports(actual).toEqual(expected);
+            expect(actual).toEqual(expected);
         });
 
         it('Should update the observers', () => {
@@ -116,7 +116,7 @@ describe('The LocationConsumer class', () => {
         it('Should throw an error if it is not connected to any topic.', (done) => {
             const locationConsumer = new LocationConsumer(kafkaClientMock);
 
-            const expectedError = 'The kafka consumer must be connected before reading a topic.';
+            const expectedError = 'The consumer must be connected before reading a topic.';
             expect(locationConsumer.run()).rejects.toThrowError(expectedError).then(done);
         });
 
@@ -165,14 +165,14 @@ describe('The LocationConsumer class', () => {
         it('Should throw an error if a consumer is not defined', (done) => {
             const expectedError = 'A Kafka consumer must be supplied through class construction.';
 
-            expect(LocationConsumer.prototype.connect).rejects
+            expect(async () => await LocationConsumer.prototype.connect()).rejects
                 .toThrowError(expectedError).then(done);
         });
 
         it('Should return the consumer if defined.', () => {
             const locationConsumer = new LocationConsumer(kafkaClientMock);
 
-            expect(locationConsumer.connect).resolves.not.toThrow();
+            expect(async () => await locationConsumer.connect()).not.toThrow();
         });
     });
 });
