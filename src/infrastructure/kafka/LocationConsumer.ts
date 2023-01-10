@@ -48,11 +48,15 @@ export class LocationConsumer implements Observable {
     }
 
     async connect(topic?: string) {
-        await this.consumer.connect();
-        await this.consumer.subscribe({topic: topic || 'location_input'});
+        try {
+            await this.consumer.connect();
+            await this.consumer.subscribe({topic: topic || 'location_input'});
 
-        this.isConnected = true;
-        return this;
+            this.isConnected = true;
+            return this;
+        } catch (e) {
+            throw new Error(e as string);
+        }
     }
 
     async run(options: ConsumerRunConfig = {}) {
@@ -60,7 +64,11 @@ export class LocationConsumer implements Observable {
             throw new Error('The consumer must be connected before reading a topic.');
         }
 
-        await this.consumer.run(options);
+        try {
+            await this.consumer.run(options);
+        } catch (e) {
+            throw new Error(e as string);
+        }
     }
 
     notifyObserver(issue: Issue) {
