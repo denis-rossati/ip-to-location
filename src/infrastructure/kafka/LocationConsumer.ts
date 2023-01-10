@@ -1,73 +1,83 @@
-import {Consumer, ConsumerRunConfig, Kafka} from "kafkajs";
-import {Issue, Observable, Observer} from "../../types";
+import {Consumer, ConsumerRunConfig, Kafka} from 'kafkajs';
+import {Issue, Observable, Observer} from '../../types';
 
 export class LocationConsumer implements Observable {
-    private readonly _client?: Kafka;
-    private readonly _consumer: Consumer;
+	_observers: Observer[] = [];
 
-    constructor(client: Kafka, groupId?: string) {
-        this._client = client;
+	private readonly _client?: Kafka;
 
-        this._consumer = this.client.consumer({groupId: groupId || 'webserver'});
-    }
+	private readonly _consumer: Consumer;
 
-    _observers: Observer[] = [];
+	private _isConnected = false;
 
-    get observers() {
-        return this._observers;
-    }
+	constructor(client: Kafka, groupId?: string) {
+		this._client = client;
 
-    private set observers(observers) {
-        this._observers = observers;
-    }
+		this._consumer = this.client.consumer({groupId: groupId || 'webserver'});
+	}
 
-    private _isConnected = false;
+	async connect(topic?: string) {
+		try {
+			await this.consumer.connect();
+			await this.consumer.subscribe({topic: topic || 'location_input'});
 
-    get isConnected() {
-        return this._isConnected;
-    }
+			this.isConnected = true;
 
-    private set isConnected(isConnected: boolean) {
-        this._isConnected = isConnected;
-    }
+			return this;
+		} catch (e) {
+			throw new Error(e as string);
+		}
+	}
 
-    get client() {
-        if (this._client === undefined) {
-            throw new Error('A Kafka client must be supplied through class construction.');
-        }
+	async run(options: ConsumerRunConfig = {}) {
+		if (!this.isConnected) {
+			throw new Error('The consumer must be connected before reading a topic.');
+		}
 
-        return this._client;
-    }
+		try {
+			await this.consumer.run(options);
+		} catch (e) {
+			throw new Error(e as string);
+		}
+	}
 
-    private get consumer() {
-        if (this._consumer === undefined) {
-            throw new Error('A Kafka consumer must be supplied through class construction.');
-        }
+	notifyObserver(issue: Issue) {
+		this.observers.forEach((observer) => observer.update(issue));
+	}
 
-        return this._consumer;
-    }
+	addObserver(...subjects: Observer[]) {
+		this.observers = [...this.observers, ...subjects];
+	}
 
-    async connect(topic?: string) {
-        await this.consumer.connect();
-        await this.consumer.subscribe({topic: topic || 'location_input'});
+	get observers() {
+		return this._observers;
+	}
 
-        this.isConnected = true;
-        return this;
-    }
+	private set observers(observers) {
+		this._observers = observers;
+	}
 
-    async run(options: ConsumerRunConfig = {}) {
-        if (!this.isConnected) {
-            throw new Error('The consumer must be connected before reading a topic.');
-        }
+	get client() {
+		if (this._client === undefined) {
+			throw new Error('A Kafka client must be supplied through class construction.');
+		}
 
-        await this.consumer.run(options);
-    }
+		return this._client;
+	}
 
-    notifyObserver(issue: Issue) {
-        this.observers.forEach((observer) => observer.update(issue));
-    }
+	get isConnected() {
+		return this._isConnected;
+	}
 
-    addObserver(...subjects: Observer[]) {
-        this.observers = [...this.observers, ...subjects];
-    }
+	private set isConnected(isConnected: boolean) {
+		this._isConnected = isConnected;
+	}
+
+	private get consumer() {
+		if (this._consumer === undefined) {
+			throw new Error('A Kafka consumer must be supplied through class construction.');
+		}
+
+		return this._consumer;
+	}
 }
