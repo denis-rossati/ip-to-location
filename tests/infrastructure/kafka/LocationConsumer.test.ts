@@ -1,6 +1,6 @@
 import {ConsumerConfig, ConsumerRunConfig, Kafka} from 'kafkajs';
-import {LocationConsumer} from '../../../../src/infrastructure/kafka';
-import {Issue, Observer} from '../../../../src/types';
+import {LocationConsumer} from '../../../src/infrastructure/kafka';
+import {Issue, Observer} from '../../../src/types';
 
 describe('The LocationConsumer class', () => {
 	let kafkaClientMock: Kafka;

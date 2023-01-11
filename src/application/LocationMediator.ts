@@ -20,7 +20,7 @@ export class LocationMediator implements Observer, Observable {
 		}
 	}
 
-	public async generateLocation({ip, clientId, timestamp}: Issue): Promise<void> {
+	async generateLocation({ip, clientId, timestamp}: Issue): Promise<void> {
 		// @TODO: check for cached response before fetching location
 
 		const location = await LocationRequest.fetch(ip).catch(() => null);

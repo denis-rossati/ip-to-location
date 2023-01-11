@@ -1,0 +1,65 @@
+version: '3'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    profiles:
+      - services
+      - full-app
+    hostname: zookeeper
+    container_name: zookeeper
+    restart: always
+    env_file: .dev.env
+    healthcheck:
+      test: echo srvr | nc zookeeper ${KAFKA_ZOOKEEPER_PORT}
+      retries: 20
+      interval: 10s
+    ports:
+      - ${KAFKA_ZOOKEEPER_PORT}:${KAFKA_ZOOKEEPER_PORT}
+    environment:
+      ZOOKEEPER_CLIENT_PORT: ${KAFKA_ZOOKEEPER_PORT}
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    profiles:
+      - services
+      - full-app
+    hostname: kafka
+    container_name: kafka
+    restart: always
+    env_file: .dev.env
+    healthcheck:
+      test: kafka-topics --list --bootstrap-server kafka:${KAFKA_BROKER_PORT}
+      retries: 20
+      interval: 10s
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - ${KAFKA_BROKER_PORT}:${KAFKA_BROKER_PORT}
+      - ${LOCAL_KAFKA_BROKER_PORT}:${LOCAL_KAFKA_BROKER_PORT}
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:${KAFKA_ZOOKEEPER_PORT}
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_LISTENERS: INTERNAL://:${KAFKA_BROKER_PORT},OUTSIDE://:${LOCAL_KAFKA_BROKER_PORT}
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:${KAFKA_BROKER_PORT},OUTSIDE://${LOCAL_KAFKA_BROKER_HOST}:${LOCAL_KAFKA_BROKER_PORT}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  location_service:
+    build: .
+    entrypoint: npm start
+    container_name: location_service
+    profiles:
+      - full-app
+    restart: always
+    env_file: .dev.env
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
