@@ -32,7 +32,8 @@ async function main() {
 	await admin.createTopics({topics: topicList});
 	await admin.disconnect();
 
-	const cacheClient = new CacheAdapter(new Redis());
+	const redis = new Redis('host.docker.internal:6379');
+	const cacheClient = new CacheAdapter(redis);
 
 	const locationMediator = new LocationMediator(cacheClient);
 	const locationConsumer = new LocationConsumer(kafkaClient);

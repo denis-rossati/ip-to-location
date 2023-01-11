@@ -48,6 +48,26 @@ services:
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
 
+  redis:
+    image: 'bitnami/redis:latest'
+    profiles:
+      - services
+      - full-app
+    container_name: 'redis'
+    healthcheck:
+      test: redis-cli ping --raw incr ping
+      retries: 10
+      interval: 10s
+    restart: always
+    ports:
+      - '6379:6379'
+    env_file:
+      - .dev.env
+    environment:
+      ALLOW_EMPTY_PASSWORD: yes
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
   location_service:
     build: .
     entrypoint: npm start
