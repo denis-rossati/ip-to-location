@@ -41,7 +41,7 @@ export class LocationConsumer implements Observable {
 		}
 	}
 
-	notifyObserver(issue: Issue) {
+	notifyObservers(issue: Issue) {
 		this.observers.forEach((observer) => observer.update(issue));
 	}
 

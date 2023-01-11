@@ -32,29 +32,33 @@ describe('The LocationConsumer class', () => {
 			jest.clearAllMocks();
 		});
 
-		it('Should accept observers.', () => {
-			const locationConsumer = new LocationConsumer(kafkaClientMock);
-			locationConsumer.addObserver(observerSpy1, observerSpy2);
+		describe('addObserver method.', () => {
+			it('Should add observers.', () => {
+				const locationConsumer = new LocationConsumer(kafkaClientMock);
+				locationConsumer.addObserver(observerSpy1, observerSpy2);
 
-			const actual = locationConsumer.observers;
-			const expected = [observerSpy1, observerSpy2];
+				const actual = locationConsumer.observers;
+				const expected = [observerSpy1, observerSpy2];
 
-			expect(actual).toEqual(expected);
+				expect(actual).toEqual(expected);
+			});
 		});
 
-		it('Should update the observers', () => {
-			const issue: Issue = {ip: '1.1.1.1', clientId: 'bar', timestamp: 0};
+		describe('notifyObservers method.', () => {
+			it('Should notify the observers.', () => {
+				const issue: Issue = {ip: '1.1.1.1', clientId: 'bar', timestamp: 0};
 
-			const locationConsumer = new LocationConsumer(kafkaClientMock);
-			locationConsumer.addObserver(observerSpy1, observerSpy2);
-			locationConsumer.notifyObserver(issue);
+				const locationConsumer = new LocationConsumer(kafkaClientMock);
+				locationConsumer.addObserver(observerSpy1, observerSpy2);
+				locationConsumer.notifyObservers(issue);
 
-			expect(observerSpy1.update).toBeCalledWith(issue);
-			expect(observerSpy1.update).toBeCalledTimes(1);
+				expect(observerSpy1.update).toBeCalledWith(issue);
+				expect(observerSpy1.update).toBeCalledTimes(1);
 
 
-			expect(observerSpy2.update).toBeCalledWith(issue);
-			expect(observerSpy2.update).toBeCalledTimes(1);
+				expect(observerSpy2.update).toBeCalledWith(issue);
+				expect(observerSpy2.update).toBeCalledTimes(1);
+			});
 		});
 	});
 
@@ -113,13 +117,6 @@ describe('The LocationConsumer class', () => {
 	});
 
 	describe('run method.', () => {
-		it('Should throw an error if it is not connected to any topic.', (done) => {
-			const locationConsumer = new LocationConsumer(kafkaClientMock);
-
-			const expectedError = 'The consumer must be connected before reading a topic.';
-			expect(locationConsumer.run()).rejects.toThrowError(expectedError).then(done);
-		});
-
 		it('Should execute run callback from consumer.', async () => {
 			const locationConsumer = new LocationConsumer(kafkaClientMock);
 			await locationConsumer.connect();
@@ -145,6 +142,30 @@ describe('The LocationConsumer class', () => {
 			expect(kafkaClientMock.consumer(dummy).run).toBeCalledTimes(1);
 			expect(kafkaClientMock.consumer(dummy).run).toBeCalledWith(expected);
 		});
+
+		it('Should throw an error if it is not connected to any topic.', (done) => {
+			const locationConsumer = new LocationConsumer(kafkaClientMock);
+
+			const expectedError = 'The consumer must be connected before reading a topic.';
+			expect(locationConsumer.run()).rejects.toThrowError(expectedError).then(done);
+		});
+
+		it('Should catch error if run fails.', async () => {
+			kafkaClientMock = {
+				consumer: jest.fn().mockReturnValue({
+					connect: jest.fn(),
+					subscribe: jest.fn(),
+					run: jest.fn().mockRejectedValue('foo'),
+				}),
+			} as unknown as Kafka;
+
+			const locationConsumer = new LocationConsumer(kafkaClientMock);
+
+			await locationConsumer.connect();
+
+			expect(async () => await locationConsumer.run()).rejects.toThrowError('foo');
+		});
+
 	});
 
 	describe('client method.', () => {

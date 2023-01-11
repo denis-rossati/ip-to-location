@@ -1,20 +1,25 @@
+export type UnknownProperties = { [key: string | symbol]: unknown };
+
 export type Issue = { timestamp: number, clientId: string, ip: string };
-export type OutputMessage = Issue & {
-    latitude: number | null,
-    longitude: number | null,
-    country: string | null,
-    region: string | null,
-    city: string | null,
-} & { [key: string]: unknown };
+
+export type ExternalResponse = {
+	latitude: number | null,
+	longitude: number | null,
+	country: string | null,
+	region: string | null,
+	city: string | null,
+}
+
+export type OutputMessage = Issue & ExternalResponse & UnknownProperties;
 
 export interface Observer {
-    update(issue: Issue | OutputMessage): void
+	update(issue: Issue | OutputMessage): void
 }
 
 export interface Observable {
-    _observers: Observer[];
+	_observers: Observer[];
 
-    addObserver(...subjects: Observer[]): void;
+	addObserver(...subjects: Observer[]): void;
 
-    notifyObserver(issue: Issue): void;
+	notifyObservers(issue: Issue): void;
 }
