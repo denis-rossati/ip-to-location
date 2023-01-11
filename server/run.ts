@@ -4,6 +4,8 @@ import {LocationMediator} from '../src/application/LocationMediator';
 import {LocationConsumer} from '../src/infrastructure/kafka';
 import {LocationProducer} from '../src/infrastructure/kafka/LocationProducer';
 import {eventHandler} from '../src/utils';
+import {CacheAdapter} from '../src/infrastructure/cache';
+import Redis from 'ioredis';
 
 async function main() {
 	const kafkaClient = new Kafka({
@@ -26,13 +28,13 @@ async function main() {
 		uncreatedTopics.push(LOCATION_OUTPUT_TOPIC_NAME);
 	}
 
-	await admin.createTopics({
-		topics: uncreatedTopics.map((topic) => ({topic})),
-	});
+	const topicList = uncreatedTopics.map((topic) => ({topic}));
+	await admin.createTopics({topics: topicList});
+	await admin.disconnect();
 
-	admin.disconnect();
+	const cacheClient = new CacheAdapter(new Redis());
 
-	const locationMediator = new LocationMediator();
+	const locationMediator = new LocationMediator(cacheClient);
 	const locationConsumer = new LocationConsumer(kafkaClient);
 	const locationProducer = new LocationProducer(kafkaClient);
 
