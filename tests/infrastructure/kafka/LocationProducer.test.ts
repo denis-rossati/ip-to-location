@@ -1,6 +1,6 @@
 import {Kafka, Partitioners} from 'kafkajs';
-import {LocationProducer} from '../../../../src/infrastructure/kafka/LocationProducer';
-import {OutputMessage} from '../../../../src/types';
+import {LocationProducer} from '../../../src/infrastructure/kafka/LocationProducer';
+import {OutputMessage} from '../../../src/types';
 
 describe('The LocationProducer class', () => {
 	let kafkaClientMock: Kafka;

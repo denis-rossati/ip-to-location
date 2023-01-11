@@ -1,4 +1,4 @@
-import {LocationRequest} from '../../../../src/infrastructure/http/LocationRequest';
+import {LocationRequest} from '../../../src/infrastructure/http/LocationRequest';
 
 
 describe('The LocationRequest class', () => {

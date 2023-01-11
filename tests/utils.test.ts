@@ -1,6 +1,6 @@
-import {eventHandler, getEnvironmentVariable, isValidJson} from '../../src/utils';
+import {eventHandler, getEnvironmentVariable, isValidJson} from '../src/utils';
 import {EachMessagePayload} from 'kafkajs';
-import {Issue, Observable} from '../../src/types';
+import {Issue, Observable} from '../src/types';
 
 describe('getEnvironmentVariable', () => {
 	beforeEach(() => {

@@ -1,6 +1,6 @@
-import {Issue, Observer} from '../../../src/types';
-import {LocationMediator} from '../../../src/application/LocationMediator';
-import {LocationRequest} from '../../../src/infrastructure/http/LocationRequest';
+import {Issue, Observer} from '../../src/types';
+import {LocationMediator} from '../../src/application/LocationMediator';
+import {LocationRequest} from '../../src/infrastructure/http/LocationRequest';
 
 describe('The LocationMediator class', () => {
 	afterEach(() => {
