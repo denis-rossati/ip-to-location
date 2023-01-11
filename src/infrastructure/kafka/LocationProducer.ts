@@ -39,15 +39,17 @@ export class LocationProducer implements Observer {
 	}
 
 	async update(issue: OutputMessage) {
-		if (!this.isConnected || this.producer === undefined) {
+		if (!this.isConnected) {
 			throw new Error('The producer must be connected before writing to a topic.');
 		}
 
 		this.topics.forEach((topic) => {
-			this.producer.send({
-				topic: topic,
-				messages: [{value: Buffer.from(JSON.stringify(issue))}],
-			});
+			if (this.producer !== undefined) {
+				this.producer.send({
+					topic: topic,
+					messages: [{value: Buffer.from(JSON.stringify(issue))}],
+				});
+			}
 		});
 	}
 
