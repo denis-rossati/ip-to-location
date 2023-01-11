@@ -1,10 +1,16 @@
 import {Kafka} from 'kafkajs';
-import {LOCATION_INPUT_TOPIC_NAME, LOCATION_OUTPUT_TOPIC_NAME} from './constants';
+import {KAFKA_BROKER_HOST, KAFKA_BROKER_PORT, LOCATION_INPUT_TOPIC_NAME, LOCATION_OUTPUT_TOPIC_NAME} from './constants';
 import {LocationMediator} from '../src/application/LocationMediator';
 import {LocationConsumer} from '../src/infrastructure/kafka';
 import {LocationProducer} from '../src/infrastructure/kafka/LocationProducer';
+import {eventHandler} from '../src/utils';
 
-async function main(kafkaClient: Kafka) {
+async function main() {
+	const kafkaClient = new Kafka({
+		clientId: 'location_evaluation',
+		brokers: [`${KAFKA_BROKER_HOST}:${KAFKA_BROKER_PORT}`],
+	});
+
 	const admin = kafkaClient.admin();
 	await admin.connect();
 	const topics = await admin.listTopics();
@@ -37,6 +43,8 @@ async function main(kafkaClient: Kafka) {
 	await locationProducer.connect(LOCATION_OUTPUT_TOPIC_NAME);
 
 	await locationConsumer.run({
-		eachMessage: messageHandler(locationConsumer),
-	})
+		eachMessage: eventHandler(locationConsumer),
+	});
 }
+
+main().catch(console.error);
