@@ -1,8 +1,15 @@
-import {Issue, Observable, Observer} from '../types';
+import {CacheClient, Issue, Observable, Observer} from '../types';
 import {LocationRequest} from '../infrastructure/http/LocationRequest';
 
 export class LocationMediator implements Observer, Observable {
 	_observers: Observer[] = [];
+
+	_cache: CacheClient | null = null;
+
+	constructor(cache: CacheClient | null = null) {
+		this._cache = cache;
+	}
+
 
 	addObserver(...subjects: Observer[]) {
 		this.observers = [...this.observers, ...subjects];
@@ -21,15 +28,38 @@ export class LocationMediator implements Observer, Observable {
 	}
 
 	async generateLocation({ip, clientId, timestamp}: Issue): Promise<void> {
-		// @TODO: check for cached response before fetching location
+		let outputMessage;
+		const cacheKey = `${clientId}-${ip}`;
+
+		if (this.cache !== null) {
+			outputMessage = await this.cache.get(cacheKey);
+
+			if (outputMessage !== null) {
+				this.notifyObservers(outputMessage);
+
+				return;
+			}
+		}
 
 		const location = await LocationRequest.fetch(ip).catch(() => null);
 
 		if (location !== null) {
-			const outputMessage = {...location, clientId, timestamp, ip};
+			outputMessage = {...location, clientId, timestamp, ip};
 
 			this.notifyObservers(outputMessage);
+
+			if (this.cache !== null) {
+				this.cache.set(cacheKey, JSON.stringify(outputMessage));
+			}
 		}
+	}
+
+	get cache() {
+		return this._cache;
+	}
+
+	set cache(cache: CacheClient | null) {
+		this._cache = cache;
 	}
 
 	get observers() {

@@ -23,3 +23,9 @@ export interface Observable {
 
 	notifyObservers(issue: Issue): void;
 }
+
+export interface CacheClient {
+	set(key: string, value: string, ttl?: number): void;
+
+	get(key: string): Promise<OutputMessage | null>;
+}
