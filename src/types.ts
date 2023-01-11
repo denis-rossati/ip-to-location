@@ -3,7 +3,6 @@ export type UnknownProperties = { [key: string | symbol]: unknown };
 export type Issue = { timestamp: number, clientId: string, ip: string };
 
 export type ExternalResponse = {
-	ip: string | null,
 	latitude: number | null,
 	longitude: number | null,
 	country: string | null,
