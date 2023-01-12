@@ -3,7 +3,7 @@
 /tests
 /integration
 stryker.conf.json
-silly-wizard.sh
+silly-wizard.js
 README.md
 jest.config.js
 .gitignore
