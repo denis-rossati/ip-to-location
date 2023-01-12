@@ -1,7 +1,11 @@
-import {Observable, Observer} from '../src/types';
+import {Issue, Observable, Observer} from '../../src/types';
 
 export class InMemoryConsumer implements Observable {
 	_observers: Observer[] = [];
+
+	public sendMessage(issue: Issue) {
+		this.notifyObservers(issue);
+	}
 
 	notifyObservers(issue: Issue) {
 		this.observers.forEach((observer) => observer.update(issue));
@@ -18,5 +22,4 @@ export class InMemoryConsumer implements Observable {
 	private set observers(observers) {
 		this._observers = observers;
 	}
-
 }
