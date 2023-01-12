@@ -44,3 +44,9 @@ typings/
 
 # Typescript build output
 build/
+
+# Eslint configuration
+.eslintrc.js
+
+# Stryker generated files
+coverage/

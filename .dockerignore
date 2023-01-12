@@ -1,0 +1,12 @@
+/node_modules
+/build
+/tests
+/integration
+stryker.conf.json
+silly-wizard.sh
+README.md
+jest.config.js
+.gitignore
+.eslintrc.js
+.dockerignore
+.stryker-tmp
