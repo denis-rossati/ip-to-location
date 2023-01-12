@@ -1,71 +1,195 @@
-import {Issue, Observer} from '../../src/types';
+import {CacheClient, ExternalResponse, Issue, Observer, OutputMessage} from '../../src/types';
 import {LocationMediator} from '../../src/application/LocationMediator';
 import {LocationRequest} from '../../src/infrastructure/http/LocationRequest';
+import {CacheAdapter} from '../../src/infrastructure/cache';
 
 describe('The LocationMediator class', () => {
 	afterEach(() => {
 		jest.clearAllMocks();
 	});
 
-	describe('generateLocation methods.', () => {
-		beforeEach(() => {
-			jest.spyOn(LocationRequest, 'fetch').mockResolvedValue({
-				city: 'foo',
-				region: 'bar',
-				country: 'baz',
-				latitude: 0,
-				longitude: 0,
+	describe('generateLocation method.', () => {
+		describe('Without cache', () => {
+			beforeEach(() => {
+				jest.spyOn(LocationRequest, 'fetch').mockResolvedValue({
+					city: 'foo',
+					region: 'bar',
+					country: 'baz',
+					latitude: 0,
+					longitude: 0,
+				});
+
+
+				jest.spyOn(CacheAdapter.prototype, 'get').mockImplementation(async () => null);
+				jest.spyOn(CacheAdapter.prototype, 'set').mockImplementation(async () => undefined);
+			});
+
+			afterEach(() => {
+				jest.clearAllMocks();
+			});
+
+			it('Should notify observers with full location from fetch if cache is null.', async () => {
+				jest.spyOn(LocationMediator.prototype, 'notifyObservers');
+
+				const locationMediator = new LocationMediator();
+
+				const dummy = {ip: '1.1.1.1', clientId: 'qux', timestamp: 0};
+				await locationMediator.generateLocation(dummy);
+
+				const expected = {
+					ip: '1.1.1.1',
+					city: 'foo',
+					region: 'bar',
+					country: 'baz',
+					latitude: 0,
+					longitude: 0,
+					timestamp: 0,
+					clientId: 'qux',
+				};
+
+				expect(LocationMediator.prototype.notifyObservers).toBeCalledWith(expected);
+
+				// Since cache is null, we must not execute any method.
+				expect(CacheAdapter.prototype.get).not.toBeCalled();
+				expect(CacheAdapter.prototype.set).not.toBeCalled();
+			});
+
+			it('Should not notify observers if external response is null.', async () => {
+				jest.spyOn(LocationRequest, 'fetch').mockResolvedValue(null);
+				jest.spyOn(LocationMediator.prototype, 'notifyObservers');
+
+				const locationMediator = new LocationMediator();
+
+				const dummy = {ip: '1.1.1.1', clientId: 'qux', timestamp: 0};
+				await locationMediator.generateLocation(dummy);
+
+				expect(LocationMediator.prototype.notifyObservers).not.toBeCalled();
+			});
+
+			it('Should not notify observers if external response fails.', async () => {
+				jest.spyOn(LocationRequest, 'fetch').mockRejectedValue('foo');
+				jest.spyOn(LocationMediator.prototype, 'notifyObservers');
+
+				const locationMediator = new LocationMediator();
+
+				const dummy = {ip: '1.1.1.1', clientId: 'qux', timestamp: 0};
+				await locationMediator.generateLocation(dummy);
+
+				expect(LocationMediator.prototype.notifyObservers).not.toBeCalled();
 			});
 		});
 
-		afterEach(() => {
-			jest.clearAllMocks();
-		});
+		describe('With cache', () => {
+			let mockCacheClient: CacheClient;
+			let cachedValue: OutputMessage;
+			let fetchedValue: ExternalResponse;
 
-		it('Should output full location.', async () => {
-			jest.spyOn(LocationMediator.prototype, 'notifyObservers');
+			beforeEach(() => {
+				fetchedValue = {
+					city: 'fetched value',
+					region: 'fetched value',
+					country: 'fetched value',
+					latitude: 0,
+					longitude: 0,
+				};
 
-			const locationMediator = new LocationMediator();
+				cachedValue = {
+					ip: '1.1.1.1',
+					city: 'cached value',
+					region: 'cached value',
+					country: 'cached value',
+					latitude: 1,
+					longitude: 1,
+					timestamp: 0,
+					clientId: 'cached value',
+				}
 
-			const dummy = {ip: '1.1.1.1', clientId: 'qux', timestamp: 0};
-			await locationMediator.generateLocation(dummy);
+				jest.spyOn(LocationRequest, 'fetch').mockResolvedValue(fetchedValue);
 
-			const expected = {
-				ip: '1.1.1.1',
-				city: 'foo',
-				region: 'bar',
-				country: 'baz',
-				latitude: 0,
-				longitude: 0,
-				timestamp: 0,
-				clientId: 'qux',
-			};
+				mockCacheClient = {
+					get: jest.fn().mockImplementation(async () => cachedValue),
+					set: jest.fn().mockImplementation(async () => undefined),
+				} as unknown as CacheClient;
+			});
 
-			expect(LocationMediator.prototype.notifyObservers).toBeCalledWith(expected);
-		});
+			afterEach(() => {
+				jest.clearAllMocks();
+			});
 
-		it('Should not update observers if external response is null.', async () => {
-			jest.spyOn(LocationRequest, 'fetch').mockResolvedValue(null);
-			jest.spyOn(LocationMediator.prototype, 'notifyObservers');
+			it('Should notify observers with cached value if defined.', async () => {
+				const locationMediator = new LocationMediator(mockCacheClient);
 
-			const locationMediator = new LocationMediator();
+				jest.spyOn(locationMediator, 'notifyObservers');
 
-			const dummy = {ip: '1.1.1.1', clientId: 'qux', timestamp: 0};
-			await locationMediator.generateLocation(dummy);
+				const dummy = {ip: 'foo', clientId: 'bar', timestamp: 0} as Issue;
 
-			expect(LocationMediator.prototype.notifyObservers).not.toBeCalled();
-		});
+				const expectedCacheKey = `${dummy.clientId}-${dummy.ip}`;
+				await locationMediator.generateLocation(dummy);
 
-		it('Should not update observers if external response fails.', async () => {
-			jest.spyOn(LocationRequest, 'fetch').mockRejectedValue('foo');
-			jest.spyOn(LocationMediator.prototype, 'notifyObservers');
+				expect(locationMediator.notifyObservers).toBeCalledTimes(1);
+				expect(locationMediator.notifyObservers).toBeCalledWith(cachedValue);
 
-			const locationMediator = new LocationMediator();
+				expect(mockCacheClient.get).toBeCalledTimes(1);
+				expect(mockCacheClient.get).toBeCalledWith(expectedCacheKey);
+			});
 
-			const dummy = {ip: '1.1.1.1', clientId: 'qux', timestamp: 0};
-			await locationMediator.generateLocation(dummy);
+			it('Should notify observers with value from fetch if location is not cached.', async () => {
+				mockCacheClient = {
+					get: jest.fn().mockImplementation(async () => null),
+					set: jest.fn().mockImplementation(async () => undefined),
+				} as unknown as CacheClient;
 
-			expect(LocationMediator.prototype.notifyObservers).not.toBeCalled();
+				const locationMediator = new LocationMediator(mockCacheClient);
+
+				jest.spyOn(locationMediator, 'notifyObservers');
+
+				const dummy = {ip: 'foo', clientId: 'bar', timestamp: 0} as Issue;
+
+				const expectedCacheKey = `${dummy.clientId}-${dummy.ip}`;
+				await locationMediator.generateLocation(dummy);
+
+				expect(locationMediator.notifyObservers).toBeCalledWith({...fetchedValue, ...dummy});
+
+				expect(mockCacheClient.get).toBeCalledTimes(1);
+				expect(mockCacheClient.get).toBeCalledWith(expectedCacheKey);
+			});
+
+			it('Should set notified message after getting location from fetch', async () => {
+				mockCacheClient = {
+					get: jest.fn().mockImplementation(async () => null),
+					set: jest.fn().mockImplementation(async () => undefined),
+				} as unknown as CacheClient;
+
+				const locationMediator = new LocationMediator(mockCacheClient);
+
+				jest.spyOn(locationMediator, 'notifyObservers');
+
+				const dummy = {clientId: 'bar', timestamp: 0, ip: 'foo'} as Issue;
+
+				const expectedCacheKey = `${dummy.clientId}-${dummy.ip}`;
+				await locationMediator.generateLocation(dummy);
+
+				expect(locationMediator.notifyObservers).toBeCalledWith({...fetchedValue, ...dummy});
+
+				expect(mockCacheClient.set).toBeCalledTimes(1);
+				expect(mockCacheClient.set).toBeCalledWith(expectedCacheKey, JSON.stringify({...fetchedValue, ...dummy}));
+			});
+
+			it('Should not set notified message if retrieved from cache.', async () => {
+				const locationMediator = new LocationMediator(mockCacheClient);
+
+				jest.spyOn(locationMediator, 'notifyObservers');
+
+				const dummy = {ip: 'foo', clientId: 'bar', timestamp: 0} as Issue;
+
+				const expectedCacheKey = `${dummy.clientId}-${dummy.ip}`;
+				await locationMediator.generateLocation(dummy);
+
+				expect(mockCacheClient.set).not.toBeCalled();
+
+				expect(locationMediator.notifyObservers).toBeCalledTimes(1);
+				expect(locationMediator.notifyObservers).toBeCalledWith(cachedValue);
+			});
 		});
 	});
 

@@ -8,6 +8,7 @@
     "start": "node build/server/run.js",
     "test": "ENV=dev jest tests",
     "test:coverage": "ENV=dev jest --coverage",
+    "test:mutation": "stryker run",
     "lint": "eslint src/**/**.ts server/**/**.ts tests/**/**.ts",
     "build": "tsc --project tsconfig.json",
     "build:clean": "rm -rf ./build && npm run build"
@@ -23,17 +24,22 @@
   },
   "homepage": "https://github.com/denis-rossati/ip-to-location#readme",
   "devDependencies": {
+    "@stryker-mutator/core": "^6.3.1",
+    "@stryker-mutator/jest-runner": "^6.3.1",
+    "@stryker-mutator/typescript-checker": "^6.3.1",
     "@types/jest": "^29.2.5",
     "@types/node": "^18.11.18",
     "@typescript-eslint/eslint-plugin": "^5.48.1",
     "@typescript-eslint/parser": "^5.48.1",
     "eslint": "^8.31.0",
     "jest": "^29.3.1",
+    "nodemon": "^2.0.20",
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1"
   },
   "dependencies": {
     "dotenv": "^16.0.3",
+    "ioredis": "^5.2.4",
     "kafkajs": "^2.2.3",
     "typescript": "^4.9.4"
   }
