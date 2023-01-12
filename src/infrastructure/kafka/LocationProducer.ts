@@ -47,7 +47,7 @@ export class LocationProducer implements Observer {
 			if (this.producer !== undefined) {
 				this.producer.send({
 					topic: topic,
-					messages: [{value: Buffer.from(JSON.stringify(issue))}],
+					messages: [{value: JSON.stringify(issue)}],
 				});
 			}
 		});
