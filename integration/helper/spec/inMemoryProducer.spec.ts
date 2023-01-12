@@ -1,5 +1,5 @@
-import {InMemoryProducer} from './inMemoryProducer';
-import {OutputMessage} from '../../src/types';
+import {InMemoryProducer} from '../inMemoryProducer';
+import {OutputMessage} from '../../../src/types';
 
 describe('inMemoryProducer', () => {
 	it('Should return the argument', () => {

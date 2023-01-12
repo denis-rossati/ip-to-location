@@ -1,5 +1,5 @@
-import {Issue, Observer} from '../../src/types';
-import {InMemoryConsumer} from './inMemoryConsumer';
+import {Issue, Observer} from '../../../src/types';
+import {InMemoryConsumer} from '../inMemoryConsumer';
 
 describe('inMemoryConsumer', () => {
 	describe('observable interface methods.', () => {
