@@ -3,12 +3,20 @@
 ## What is this?
 
 This is an application that takes an IP and retrieves the location based on that IP. In other words, if you send your
-IP, the application must show you your approximate location. To use the application, see the section "How to use it?"
+IP, the application respond you with your approximate location. To use the application, see the section "How to use it?"
 below.
 
 The structure of the project was made following the below drawing:
 
-<img src="https://user-images.githubusercontent.com/943036/148793496-5f73bd8f-f515-4e28-8fa6-9fbc88aa0ca4.png">
+<img src="https://user-images.githubusercontent.com/943036/148793496-5f73bd8f-f515-4e28-8fa6-9fbc88aa0ca4.png" alt="Application diagram with the requested services">
+
+---
+
+## Apresentation
+
+<a href="https://www.youtube.com/watch?v=gNXDTGVQCMs">
+  <img src="http://img.youtube.com/vi/gNXDTGVQCMs/0.jpg"/>
+</a>
 
 ---
 
@@ -19,18 +27,22 @@ The structure of the project was made following the below drawing:
 To run the tests, you'll just need npm and to install the dependencies:
 
 ```shell
-npm i && npm test
+npm i && npm run test:unitary
 ```
 
-### End-to-end
+### Integration
 
-- In development
+```shell
+npm i && npm run test:integration
+```
+
+or `npm test` if you want to run both unitary and integration tests.
 
 ---
 
 ## How to use it?
 
-You have two ways to use this application, keep in mind that the two of them have the same output:
+You have two ways to use this application, keep in mind that they have the same output:
 
 ### Production
 
@@ -57,7 +69,8 @@ And type a valid IPv4 or IPv6:
   </figure>
 
 
-<i>Since you are watching the output topic directly, the responses are broadcast-like, in other words, you'll see everyone else
+<i>Since you are watching the output topic directly, the responses are broadcast-like, in other words, you'll see
+everyone else
 messages, and everyone else will see your messages.</i>
 
 </details>
@@ -67,13 +80,13 @@ messages, and everyone else will see your messages.</i>
 Recommended for development purpose. Must have docker and docker-compose installed.
 
 <details>
-Run the following command to get the app up an running. The .dev.env file has valid environment variables:
+Run the following command to get the app up a running. The .dev.env file has valid environment variables:
 
 ```shell
 docker compose --env-file .dev.env --profile full-app up
 ```
 
-Them you will connect to connect to the input and output topics. Open two terminal instances and in the first terminal,
+Then you will connect to the input and output topics. Open two terminal instances and in the first terminal,
 do the following to get access to the kafka service command line:
 
 ```shell
@@ -105,17 +118,17 @@ As soon as the console is ready, you can produce messages with the following sch
 {"clientId": "your_client_id", "timestamp": 123, "ip": "insert_ipv4_or_ipv6"}
 ```
 
-And then check your output terminal. The location must be there :) 
-
+And then check the consumer console. The location must be there :)
 </details>
+
+### Direct connection
+
+If you want to type your keys a bit, you can connect to the production broker
+at `ec2-15-228-13-15.sa-east-1.compute.amazonaws.com:9094`. The topics are 'location_input' and 'location_output'.
 
 ---
 
 ## Decisions through development phase
-
-- Notice that the application doesn't meet the integration tests requirement. I think it is my lack of experience with
-  kafka, but I couldn't isolate my modules from the kafka service itself. Instead, I create some e2e tests :)
-
 
 - Currently, the topics only accept and producer messages that are a valid JSON with 'clientId', 'timestamp' and 'ip'.
   Unfortunately, the client doesn't have ways to know what is the schema of the message, unless they read this README.
@@ -123,11 +136,9 @@ And then check your output terminal. The location must be there :)
   would have an extra service between the input and output topic.
 
 
-- One problem that could be solved with a extra service was the ignored messages. Currently, the application ignore the
-  messages that doesn't meet the standards to be outputed to the 'location_output' topic. In other words, if the message
-  is not a valid JSON, if ipstack doesn't return a valid answer, etc... If a fail case occurs, the application just
-  ignore the message. Which I think it's not ideal, I would solve this issue with a extra topic called '
-  invalid_messages' that would be a queue to try to correct any JSON mispellings or try to recover the data from the
-  API.
+- One problem that could be solved with extra service was the ignored messages. Currently, the application invalid
+  messages that is if the message is not a valid JSON, if ipstack doesn't return a valid answer, etc... If a fail case
+  occurs, the application just forget about the message. Which I think it's not ideal, I would solve this issue with an
+  extra topic called 'invalid_messages' that would be a retry queue or maybe a dead letter queue for minimum analytics.
 
 ---
