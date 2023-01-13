@@ -89,4 +89,46 @@ describe('eventHandler', () => {
 
 		expect(mockObservable.notifyObservers).not.toBeCalled();
 	});
+
+	it('Should ignore message if IP is undefined', () => {
+		const invalidEvent = {
+			message: {value: {clientId: 'foo', timestamp: 0}},
+		} as unknown as EachMessagePayload;
+
+		const mockObservable = {
+			notifyObservers: jest.fn(),
+		} as unknown as Observable;
+
+		eventHandler(mockObservable)(invalidEvent);
+
+		expect(mockObservable.notifyObservers).not.toBeCalled();
+	});
+
+	it('Should ignore message if timestamp is not a number', () => {
+		const invalidEvent = {
+			message: {value: {clientId: 'foo', ip: 'foo', timestamp: 'foo'}},
+		} as unknown as EachMessagePayload;
+
+		const mockObservable = {
+			notifyObservers: jest.fn(),
+		} as unknown as Observable;
+
+		eventHandler(mockObservable)(invalidEvent);
+
+		expect(mockObservable.notifyObservers).not.toBeCalled();
+	});
+
+	it('Should ignore message if client id is undefined', () => {
+		const invalidEvent = {
+			message: {value: {timestamp: 0, ip: 'foo'}},
+		} as unknown as EachMessagePayload;
+
+		const mockObservable = {
+			notifyObservers: jest.fn(),
+		} as unknown as Observable;
+
+		eventHandler(mockObservable)(invalidEvent);
+
+		expect(mockObservable.notifyObservers).not.toBeCalled();
+	});
 });

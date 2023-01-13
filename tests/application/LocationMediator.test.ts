@@ -102,7 +102,7 @@ describe('The LocationMediator class', () => {
 					longitude: 1,
 					timestamp: 0,
 					clientId: 'cached value',
-				}
+				};
 
 				jest.spyOn(LocationRequest, 'fetch').mockResolvedValue(fetchedValue);
 
@@ -182,7 +182,6 @@ describe('The LocationMediator class', () => {
 
 				const dummy = {ip: 'foo', clientId: 'bar', timestamp: 0} as Issue;
 
-				const expectedCacheKey = `${dummy.clientId}-${dummy.ip}`;
 				await locationMediator.generateLocation(dummy);
 
 				expect(mockCacheClient.set).not.toBeCalled();

@@ -19,17 +19,20 @@ export function isValidJson(json: string) {
 
 export function eventHandler(manager: Observable) {
 	return async (event: EachMessagePayload) => {
-		const message = event.message.value;
+		const bufferMessage = event.message.value;
 
-		if (message !== null && isValidJson(message.toString())) {
+		if (bufferMessage !== null && isValidJson(bufferMessage.toString())) {
 			const {
 				timestamp,
 				clientId,
 				ip,
-			} = JSON.parse(message.toString());
+			} = JSON.parse(bufferMessage.toString());
 
-			const issue: Issue = {ip, timestamp, clientId};
-			manager.notifyObservers(issue);
+			// the validation fails if timestamp is 0
+			if (typeof timestamp === 'number' && ip && clientId) {
+				const issue: Issue = {ip, timestamp, clientId};
+				manager.notifyObservers(issue);
+			}
 		}
 	}
 }

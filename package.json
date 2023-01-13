@@ -5,11 +5,14 @@
   "main": "build/server/run.js",
   "type": "commonjs",
   "scripts": {
+    "dev": "ENV=dev nodemon",
     "start": "node build/server/run.js",
-    "test": "ENV=dev jest tests",
+    "test": "ENV=dev jest tests integration",
+    "test:unitary": "ENV=dev jest tests",
+    "test:integration": "ENV=dev jest integration",
     "test:coverage": "ENV=dev jest --coverage",
     "test:mutation": "stryker run",
-    "lint": "eslint src/**/**.ts server/**/**.ts tests/**/**.ts",
+    "lint": "eslint src/**/**.ts server/**/**.ts tests/**/**.ts integration/**/**.ts",
     "build": "tsc --project tsconfig.json",
     "build:clean": "rm -rf ./build && npm run build"
   },
