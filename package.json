@@ -8,7 +8,7 @@
     "dev": "ENV=dev nodemon",
     "start": "node build/server/run.js",
     "test": "ENV=dev jest tests integration",
-    "test:unity": "ENV=dev jest tests",
+    "test:unitary": "ENV=dev jest tests",
     "test:integration": "ENV=dev jest integration",
     "test:coverage": "ENV=dev jest --coverage",
     "test:mutation": "stryker run",

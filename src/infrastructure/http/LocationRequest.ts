@@ -21,7 +21,7 @@ export class LocationRequest {
 			&& requestedFields.every((field) => payload.has(field));
 	}
 
-	private static mountOutput(ip: string, payload: Map<string, unknown>, fields: string[]): ExternalResponse {
+	private static mountOutput(payload: Map<string, unknown>, fields: string[]): ExternalResponse {
 		const sanitizedMap = new Map();
 
 		fields.forEach((key) => {
@@ -49,13 +49,13 @@ export class LocationRequest {
 		try {
 			const entries = Object.entries(await response.json());
 
-			// We cannot predict an response from aexternal request.
+			// We cannot predict the response from the external request.
 			// Therefore, the type hint must be generic and the response must be validated.
 			const payload = new Map(entries);
 			const isValidResponse = LocationRequest.isValidResponse(payload, responseFields);
 
 			if (isValidResponse) {
-				return LocationRequest.mountOutput(ip, payload, responseFields);
+				return LocationRequest.mountOutput(payload, responseFields);
 			}
 
 			return null;
