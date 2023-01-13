@@ -12,7 +12,7 @@
     "test:integration": "ENV=dev jest integration",
     "test:coverage": "ENV=dev jest --coverage",
     "test:mutation": "stryker run",
-    "lint": "eslint src/**/**.ts server/**/**.ts tests/**/**.ts",
+    "lint": "eslint src/**/**.ts server/**/**.ts tests/**/**.ts integration/**/**.ts",
     "build": "tsc --project tsconfig.json",
     "build:clean": "rm -rf ./build && npm run build"
   },
