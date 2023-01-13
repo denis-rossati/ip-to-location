@@ -3,7 +3,7 @@ import {Issue, Observable, Observer} from '../../src/types';
 export class InMemoryConsumer implements Observable {
 	_observers: Observer[] = [];
 
-	public sendMessage(issue: Issue) {
+	sendMessage(issue: Issue) {
 		this.notifyObservers(issue);
 	}
 

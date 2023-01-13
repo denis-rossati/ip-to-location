@@ -23,17 +23,6 @@ describe('The application', () => {
 			json: jest.fn().mockResolvedValue(fetchedValue),
 		} as unknown as Response)
 
-		//cachedValue = {
-		//	ip: 'fetch value',
-		//	city: 'fetch value',
-		//	region: 'fetch value',
-		//	country: 'fetch value',
-		//	latitude: 0,
-		//	longitude: 0,
-		//	timestamp: 0,
-		//	clientId: 'fetch value',
-		//}
-
 		cacheClient = {
 			get: jest.fn().mockResolvedValue(null),
 			set: jest.fn().mockImplementation(() => undefined),
