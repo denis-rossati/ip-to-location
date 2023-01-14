@@ -28,7 +28,8 @@ export function eventHandler(manager: Observable) {
 				ip,
 			} = JSON.parse(bufferMessage.toString());
 
-			// the validation fails if timestamp is 0
+			// Instead of dry validation with "timestamp" field, we need
+			// to prevent timestamp evaluate to false when the value is 0.
 			if (typeof timestamp === 'number' && ip && clientId) {
 				const issue: Issue = {ip, timestamp, clientId};
 				manager.notifyObservers(issue);
