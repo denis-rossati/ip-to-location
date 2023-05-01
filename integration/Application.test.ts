@@ -1,6 +1,6 @@
 import {InMemoryConsumer} from './helper/inMemoryConsumer';
 import {InMemoryProducer} from './helper/inMemoryProducer';
-import {LocationMediator} from '../src/application/LocationMediator';
+import {LocationMediator} from '../src/application';
 import {CacheClient, Issue} from '../src/types';
 import {sleep} from './helper/sleep';
 
@@ -17,11 +17,11 @@ describe('The application', () => {
 			country_name: 'fetch value',
 			longitude: 0,
 			latitude: 0,
-		}
+		};
 
 		jest.spyOn(global, 'fetch').mockResolvedValue({
 			json: jest.fn().mockResolvedValue(fetchedValue),
-		} as unknown as Response)
+		} as unknown as Response);
 
 		cacheClient = {
 			get: jest.fn().mockResolvedValue(null),
@@ -30,8 +30,7 @@ describe('The application', () => {
 
 		inMemoryConsumer = new InMemoryConsumer();
 		inMemoryProducer = new InMemoryProducer();
-		locationMediator = new LocationMediator(cacheClient);
-
+		locationMediator = new LocationMediator(cacheClient, {locationApiKey: '123', locationApiUrl: 'https://dummy.com'});
 
 		inMemoryConsumer.addObserver(locationMediator);
 		locationMediator.addObserver(inMemoryProducer);
@@ -43,7 +42,7 @@ describe('The application', () => {
 		jest.clearAllMocks();
 	})
 
-	it('Should send location all fields filled.', async () => {
+	it('Should send location with all fields filled.', async () => {
 		const issue: Issue = {
 			timestamp: 0,
 			ip: '1.1.1.1',
@@ -131,7 +130,7 @@ describe('The application', () => {
 			latitude: 0,
 		};
 
-		expect(cacheClient.get).toBeCalledWith('integration-test-1.1.1.1')
+		expect(cacheClient.get).toBeCalledWith('integration-test-1.1.1.1');
 		expect(inMemoryProducer.update).toBeCalledWith(expected);
 	});
 
@@ -149,7 +148,7 @@ describe('The application', () => {
 		expect(inMemoryProducer.update).not.toBeCalled();
 	});
 
-	it('Should ignore message if external resourcers send unrecognizable data.', async () => {
+	it('Should ignore message if external resources send unrecognizable data.', async () => {
 		jest.spyOn(global, 'fetch').mockResolvedValue({
 			json: jest.fn().mockResolvedValue({'invalid': 'data'}),
 		} as unknown as Response);

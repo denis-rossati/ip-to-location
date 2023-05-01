@@ -1,12 +1,17 @@
 import * as net from 'net';
-import {API_KEY, API_URL} from '../../../server/constants';
+import {configuration} from '../../../server/constants';
 import {ExternalResponse} from '../../types';
 
+export type Options = {
+	locationApiKey: string,
+	locationApiUrl: string,
+}
+
 export class LocationRequest {
-	private static mountLocationUrl(ip: string, requestedFields: string[]) {
-		const url = new URL(API_URL || 'https://ipstack.com/');
+	private static mountLocationUrl(ip: string, options: Options, requestedFields: string[]) {
+		const url = new URL(options.locationApiUrl);
 		url.pathname = ip;
-		url.searchParams.set('access_key', API_KEY || '1729');
+		url.searchParams.set('access_key', options.locationApiKey);
 
 		if (requestedFields.length > 0) {
 			url.searchParams.set('fields', requestedFields.join(','));
@@ -32,7 +37,7 @@ export class LocationRequest {
 		return Object.fromEntries(sanitizedMap);
 	}
 
-	static async fetch(ip: string, requestedFields: string[] = []) {
+	static async fetch(ip: string, options: Options, requestedFields: string[] = []) {
 		if (!net.isIP(ip)) {
 			return null;
 		}
@@ -40,7 +45,7 @@ export class LocationRequest {
 		// For faster external calls, ipstack let you choose a range of fields returned in the response.
 		const responseFields = ['latitude', 'longitude', 'country_name', 'region_name', 'city', ...requestedFields];
 
-		const requestUrl = LocationRequest.mountLocationUrl(ip, responseFields);
+		const requestUrl = LocationRequest.mountLocationUrl(ip, options, responseFields);
 
 		const response: Response = await fetch(requestUrl).catch((reason) => {
 			throw new Error(reason);

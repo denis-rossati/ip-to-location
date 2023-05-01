@@ -1,7 +1,7 @@
 import {Consumer, ConsumerRunConfig, Kafka} from 'kafkajs';
-import {Issue, Observable, Observer} from '../../types';
+import {Issue, Observer, ObserverStartPoint} from '../../types';
 
-export class LocationConsumer implements Observable {
+export class LocationConsumer implements ObserverStartPoint {
 	_observers: Observer[] = [];
 
 	private readonly _client?: Kafka;

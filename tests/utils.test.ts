@@ -1,12 +1,8 @@
-import {eventHandler, getEnvironmentVariable, isValidJson} from '../src/utils';
+import {eventHandler, getEnvironmentVariable, getNumEnvironmentVariable, isValidJson} from '../src/utils';
 import {EachMessagePayload} from 'kafkajs';
 import {Issue, Observable} from '../src/types';
 
 describe('getEnvironmentVariable', () => {
-	beforeEach(() => {
-		jest.resetModules();
-	});
-
 	it('Should return environments variable if defined.', () => {
 		process.env.foo = 'bar';
 
@@ -17,10 +13,34 @@ describe('getEnvironmentVariable', () => {
 	});
 
 	it('Should return an error if environment variable doesn\'t exist.', () => {
-		const actual = () => getEnvironmentVariable('bar');
-		const expected = 'Undefined environment variable: bar';
+		const actual = getEnvironmentVariable('bar');
 
-		expect(actual).toThrowError(expected);
+		expect(actual).toBeUndefined();
+	});
+});
+
+describe('getNumEnvironmentVariable', () => {
+	it('Should return environments variable if defined.', () => {
+		process.env.foo = '100';
+
+		const actual = getNumEnvironmentVariable('foo');
+		const expected = 100;
+
+		expect(actual).toEqual(expected);
+	});
+
+	it('Should return NaN if environment an invalid number is set', () => {
+		process.env.foo = 'invalid';
+
+		const actual = getNumEnvironmentVariable('foo');
+
+		expect(actual).toBeNaN();
+	})
+
+	it('Should return NaN if environment variable doesn\'t exist.', () => {
+		const actual = getNumEnvironmentVariable('bar');
+
+		expect(actual).toBeNaN();
 	});
 });
 
@@ -38,7 +58,6 @@ describe('isValidJson', () => {
 		expect(actual).toBeFalsy();
 	});
 });
-
 
 describe('eventHandler', () => {
 	it('Should notify observers if message is valid.', () => {
