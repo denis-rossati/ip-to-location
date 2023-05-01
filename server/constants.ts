@@ -1,15 +1,19 @@
 import dotenv from 'dotenv';
 import path from 'path';
-import {getEnvironmentVariable} from '../src/utils';
+import {getEnvironmentVariable, getNumEnvironmentVariable} from '../src/utils';
+import {Configuration} from '../src/types';
 
-const devEnvironemnt = process.env.ENV === 'dev';
+dotenv.config({path: path.join(process.cwd(), '.env')});
 
-const envFile = process.env.ENV === 'dev' ? '.dev.env' : '.env';
-dotenv.config({path: path.join(process.cwd(), envFile)});
-
-export const LOCATION_INPUT_TOPIC_NAME = getEnvironmentVariable('LOCATION_INPUT_TOPIC_NAME');
-export const LOCATION_OUTPUT_TOPIC_NAME = getEnvironmentVariable('LOCATION_OUTPUT_TOPIC_NAME');
-export const API_URL = getEnvironmentVariable('API_URL');
-export const API_KEY = getEnvironmentVariable('API_KEY');
-export const KAFKA_BROKER_HOST = getEnvironmentVariable(devEnvironemnt ? 'LOCAL_KAFKA_BROKER_HOST' : 'KAFKA_BROKER_HOST');
-export const KAFKA_BROKER_PORT = getEnvironmentVariable(devEnvironemnt ? 'LOCAL_KAFKA_BROKER_PORT' : 'KAFKA_BROKER_PORT');
+export const configuration: Configuration = {
+	locationInputTopicName: getEnvironmentVariable('LOCATION_INPUT_TOPIC_NAME') ?? 'location_input',
+	locationOutputTopicName: getEnvironmentVariable('LOCATION_OUTPUT_TOPIC_NAME') ?? 'location_output',
+	// Go easy on my 50 monthly requests, please
+	locationApiKey: getEnvironmentVariable('LOCATION_API_KEY') ?? 'f850fab28738fd82133ce51aec8e8ea7',
+	locationApiEndpoint: getEnvironmentVariable('LOCATION_API_ENDPOINT') ?? 'http://api.ipstack.com',
+	kafkaBrokerHost: getEnvironmentVariable('KAFKA_BROKER_HOST') ?? 'host.docker.internal',
+	kafkaBrokerPort: getNumEnvironmentVariable('KAFKA_BROKER_PORT') ?? 9093,
+	redisHost: getEnvironmentVariable('REDIS_HOST') ?? 'host.docker.internal',
+	redisPort: getNumEnvironmentVariable('REDIS_PORT') ?? 6379,
+	clientId: getEnvironmentVariable('KAFKA_CLIENT_ID') ?? 'location_evaluation',
+};

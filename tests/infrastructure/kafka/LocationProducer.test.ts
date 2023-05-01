@@ -1,5 +1,5 @@
 import {Kafka, Partitioners} from 'kafkajs';
-import {LocationProducer} from '../../../src/infrastructure/kafka/LocationProducer';
+import {LocationProducer} from '../../../src/infrastructure/kafka';
 import {OutputMessage} from '../../../src/types';
 
 describe('The LocationProducer class', () => {

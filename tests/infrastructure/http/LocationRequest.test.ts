@@ -21,17 +21,24 @@ describe('The LocationRequest class', () => {
 
 	describe('mountLocationUrl method', () => {
 		it('Should use environment variables if defined', async () => {
-			await LocationRequest.fetch('1.1.1.1');
+			await LocationRequest.fetch(
+				'1.1.1.1',
+				{locationApiKey: '123', locationApiUrl: 'https://dummy.com'},
+			);
 
-			const expected = 'http://api.ipstack.com/1.1.1.1?access_key=f850fab28738fd82133ce51aec8e8ea7&fields=latitude%2Clongitude%2Ccountry_name%2Cregion_name%2Ccity';
+			const expected = 'https://dummy.com/1.1.1.1?access_key=123&fields=latitude%2Clongitude%2Ccountry_name%2Cregion_name%2Ccity';
 
 			expect(fetch).toBeCalledWith(expected);
 		});
 
 		it('Should include "fields" if requested', async () => {
-			await LocationRequest.fetch('1.1.1.1', ['foo', 'bar']);
+			await LocationRequest.fetch(
+				'1.1.1.1',
+				{locationApiKey: '123', locationApiUrl: 'https://dummy.com'},
+				['foo', 'bar'],
+			);
 
-			const expected = 'http://api.ipstack.com/1.1.1.1?access_key=f850fab28738fd82133ce51aec8e8ea7&fields=latitude%2Clongitude%2Ccountry_name%2Cregion_name%2Ccity%2Cfoo%2Cbar';
+			const expected = 'https://dummy.com/1.1.1.1?access_key=123&fields=latitude%2Clongitude%2Ccountry_name%2Cregion_name%2Ccity%2Cfoo%2Cbar';
 
 			expect(fetch).toBeCalledWith(expected);
 		});
@@ -43,7 +50,10 @@ describe('The LocationRequest class', () => {
 		});
 
 		it('Should return output if every key in payload was included and every requested field is in the payload.', async () => {
-			const actual = await LocationRequest.fetch('1.1.1.1');
+			const actual = await LocationRequest.fetch(
+				'1.1.1.1',
+				{locationApiKey: '123', locationApiUrl: 'https://dummy.com'},
+			);
 			const expected = {
 				latitude: null,
 				longitude: null,
@@ -56,7 +66,11 @@ describe('The LocationRequest class', () => {
 		});
 
 		it('Should return null if some requested field is missing.', async () => {
-			const actual = await LocationRequest.fetch('1.1.1.1', ['missing', 'field']);
+			const actual = await LocationRequest.fetch(
+				'1.1.1.1',
+				{locationApiKey: '123', locationApiUrl: 'https://dummy.com'},
+				['missing', 'field'],
+			);
 			expect(actual).toBeNull();
 		});
 
@@ -73,7 +87,10 @@ describe('The LocationRequest class', () => {
 				})),
 			} as unknown as Response;
 			jest.spyOn(global, 'fetch').mockResolvedValue(fetchStub);
-			const actual = await LocationRequest.fetch('1.1.1.1');
+			const actual = await LocationRequest.fetch(
+				'1.1.1.1',
+				{locationApiKey: '123', locationApiUrl: 'https://dummy.com'},
+			);
 
 			expect(actual).toBeNull();
 		})
@@ -96,7 +113,10 @@ describe('The LocationRequest class', () => {
 			} as unknown as Response;
 			jest.spyOn(global, 'fetch').mockResolvedValue(fetchStub);
 
-			const actual = await LocationRequest.fetch('1.1.1.1');
+			const actual = await LocationRequest.fetch(
+				'1.1.1.1',
+				{locationApiKey: '123', locationApiUrl: 'https://dummy.com'},
+			);
 			const expected = {
 				latitude: 0,
 				longitude: 0,
@@ -120,7 +140,10 @@ describe('The LocationRequest class', () => {
 			} as unknown as Response;
 			jest.spyOn(global, 'fetch').mockResolvedValue(fetchStub);
 
-			const actual = await LocationRequest.fetch('1.1.1.1');
+			const actual = await LocationRequest.fetch(
+				'1.1.1.1',
+				{locationApiKey: '123', locationApiUrl: 'https://dummy.com'},
+			);
 			const expected = {
 				latitude: null,
 				longitude: null,
@@ -133,13 +156,22 @@ describe('The LocationRequest class', () => {
 		});
 
 		it('Should return null if IP is invalid', async () => {
-			const invalidIPv4 = await LocationRequest.fetch('256.256.256.256');
+			const invalidIPv4 = await LocationRequest.fetch(
+				'256.256.256.256',
+				{locationApiKey: '123', locationApiUrl: 'https://dummy.com'},
+			);
 			expect(invalidIPv4).toBeNull();
 
-			const invalidIPv6 = await LocationRequest.fetch('g:g:g:g:g:g:g:g');
+			const invalidIPv6 = await LocationRequest.fetch(
+				'g:g:g:g:g:g:g:g',
+				{locationApiKey: '123', locationApiUrl: 'https://dummy.com'},
+			);
 			expect(invalidIPv6).toBeNull();
 
-			const foobar = await LocationRequest.fetch('fucked up beyond all recongnition');
+			const foobar = await LocationRequest.fetch(
+				'foo',
+				{locationApiKey: '123', locationApiUrl: 'https://dummy.com'},
+			);
 			expect(foobar).toBeNull();
 		});
 
@@ -151,7 +183,10 @@ describe('The LocationRequest class', () => {
 			} as unknown as Response;
 			jest.spyOn(global, 'fetch').mockResolvedValue(fetchStub);
 
-			const actual = await LocationRequest.fetch('1.1.1.1');
+			const actual = await LocationRequest.fetch(
+				'1.1.1.1',
+				{locationApiKey: '123', locationApiUrl: 'https://dummy.com'},
+			);
 			expect(actual).toBeNull();
 		});
 
@@ -161,14 +196,20 @@ describe('The LocationRequest class', () => {
 			} as unknown as Response;
 			jest.spyOn(global, 'fetch').mockResolvedValue(fetchStub);
 
-			const actual = async () => await LocationRequest.fetch('1.1.1.1');
+			const actual = async () => await LocationRequest.fetch(
+				'1.1.1.1',
+				{locationApiKey: '123', locationApiUrl: 'https://dummy.com'},
+			);
 			expect(actual).rejects.toThrowError('foo').then(done);
 		});
 
 		it('Should catch error if API throws an error.', (done) => {
 			jest.spyOn(global, 'fetch').mockRejectedValue('foo');
 
-			const actual = async () => await LocationRequest.fetch('1.1.1.1');
+			const actual = async () => await LocationRequest.fetch(
+				'1.1.1.1',
+				{locationApiKey: '123', locationApiUrl: 'https://dummy.com'},
+			);
 			expect(actual).rejects.toThrowError('foo').then(done);
 		});
 	});

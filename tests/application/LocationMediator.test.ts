@@ -1,6 +1,6 @@
 import {CacheClient, ExternalResponse, Issue, Observer, OutputMessage} from '../../src/types';
-import {LocationMediator} from '../../src/application/LocationMediator';
-import {LocationRequest} from '../../src/infrastructure/http/LocationRequest';
+import {LocationMediator} from '../../src/application';
+import {LocationRequest} from '../../src/infrastructure/http';
 import {CacheAdapter} from '../../src/infrastructure/cache';
 
 describe('The LocationMediator class', () => {
@@ -31,7 +31,7 @@ describe('The LocationMediator class', () => {
 			it('Should notify observers with full location from fetch if cache is null.', async () => {
 				jest.spyOn(LocationMediator.prototype, 'notifyObservers');
 
-				const locationMediator = new LocationMediator();
+				const locationMediator = new LocationMediator(null, {locationApiKey: '123', locationApiUrl: 'https://dummy.com'});
 
 				const dummy = {ip: '1.1.1.1', clientId: 'qux', timestamp: 0};
 				await locationMediator.generateLocation(dummy);
@@ -58,7 +58,7 @@ describe('The LocationMediator class', () => {
 				jest.spyOn(LocationRequest, 'fetch').mockResolvedValue(null);
 				jest.spyOn(LocationMediator.prototype, 'notifyObservers');
 
-				const locationMediator = new LocationMediator();
+				const locationMediator = new LocationMediator(null, {locationApiKey: '123', locationApiUrl: 'https://dummy.com'});
 
 				const dummy = {ip: '1.1.1.1', clientId: 'qux', timestamp: 0};
 				await locationMediator.generateLocation(dummy);
@@ -70,7 +70,7 @@ describe('The LocationMediator class', () => {
 				jest.spyOn(LocationRequest, 'fetch').mockRejectedValue('foo');
 				jest.spyOn(LocationMediator.prototype, 'notifyObservers');
 
-				const locationMediator = new LocationMediator();
+				const locationMediator = new LocationMediator(null, {locationApiKey: '123', locationApiUrl: 'https://dummy.com'});
 
 				const dummy = {ip: '1.1.1.1', clientId: 'qux', timestamp: 0};
 				await locationMediator.generateLocation(dummy);
@@ -117,7 +117,7 @@ describe('The LocationMediator class', () => {
 			});
 
 			it('Should notify observers with cached value if defined.', async () => {
-				const locationMediator = new LocationMediator(mockCacheClient);
+				const locationMediator = new LocationMediator(mockCacheClient, {locationApiKey: '123', locationApiUrl: 'https://dummy.com'});
 
 				jest.spyOn(locationMediator, 'notifyObservers');
 
@@ -139,7 +139,7 @@ describe('The LocationMediator class', () => {
 					set: jest.fn().mockImplementation(async () => undefined),
 				} as unknown as CacheClient;
 
-				const locationMediator = new LocationMediator(mockCacheClient);
+				const locationMediator = new LocationMediator(mockCacheClient, {locationApiKey: '123', locationApiUrl: 'https://dummy.com'});
 
 				jest.spyOn(locationMediator, 'notifyObservers');
 
@@ -160,7 +160,7 @@ describe('The LocationMediator class', () => {
 					set: jest.fn().mockImplementation(async () => undefined),
 				} as unknown as CacheClient;
 
-				const locationMediator = new LocationMediator(mockCacheClient);
+				const locationMediator = new LocationMediator(mockCacheClient, {locationApiKey: '123', locationApiUrl: 'https://dummy.com'});
 
 				jest.spyOn(locationMediator, 'notifyObservers');
 
@@ -176,7 +176,7 @@ describe('The LocationMediator class', () => {
 			});
 
 			it('Should not set notified message if retrieved from cache.', async () => {
-				const locationMediator = new LocationMediator(mockCacheClient);
+				const locationMediator = new LocationMediator(mockCacheClient, {locationApiKey: '123', locationApiUrl: 'https://dummy.com'});
 
 				jest.spyOn(locationMediator, 'notifyObservers');
 
@@ -207,7 +207,7 @@ describe('The LocationMediator class', () => {
 
 		describe('addObserver method.', () => {
 			it('Should add observers.', () => {
-				const locationMediator = new LocationMediator();
+				const locationMediator = new LocationMediator(null, {locationApiKey: '123', locationApiUrl: 'https://dummy.com'});
 				locationMediator.addObserver(observerSpy1, observerSpy2);
 
 				const actual = locationMediator.observers;
@@ -221,7 +221,7 @@ describe('The LocationMediator class', () => {
 			it('Should notify the observers.', () => {
 				const issue: Issue = {ip: '1.1.1.1', clientId: 'bar', timestamp: 0};
 
-				const locationMediator = new LocationMediator();
+				const locationMediator = new LocationMediator(null, {locationApiKey: '123', locationApiUrl: 'https://dummy.com'});
 				locationMediator.addObserver(observerSpy1, observerSpy2);
 				locationMediator.notifyObservers(issue);
 
@@ -248,7 +248,7 @@ describe('The LocationMediator class', () => {
 				jest.spyOn(LocationMediator.prototype, 'generateLocation').mockImplementation(jest.fn());
 
 				const dummy = {} as unknown as Issue;
-				const locationMediator = new LocationMediator();
+				const locationMediator = new LocationMediator(null, {locationApiKey: '123', locationApiUrl: 'https://dummy.com'});
 
 				await locationMediator.update(dummy);
 
@@ -260,7 +260,7 @@ describe('The LocationMediator class', () => {
 				jest.spyOn(LocationMediator.prototype, 'generateLocation').mockRejectedValue('foo');
 
 				const dummy = {} as unknown as Issue;
-				const locationMediator = new LocationMediator();
+				const locationMediator = new LocationMediator(null, {locationApiKey: '123', locationApiUrl: 'https://dummy.com'});
 
 				const actual = async () => await locationMediator.update(dummy);
 				expect(actual).rejects.toThrowError('foo').then(done);
