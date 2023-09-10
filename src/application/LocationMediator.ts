@@ -1,16 +1,16 @@
 import {CacheClient, Issue, Observable, Observer} from '../types';
-import {LocationRequest, Options} from '../infrastructure/http';
+import {IpLocationResolver} from '../infrastructure/ipstack';
 
 export class LocationMediator implements Observer, Observable {
-	_observers: Observer[] = [];
+	private readonly _cache: CacheClient | null = null;
 
-	_cache: CacheClient | null = null;
+	private readonly _locationResolver: IpLocationResolver;
 
-	_endpointOptions: Options;
+	private _observers: Observer[] = [];
 
-	constructor(cache: CacheClient | null = null, endpointOptions: Options) {
+	constructor(locationResolver: IpLocationResolver, cache: CacheClient | null = null) {
+		this._locationResolver = locationResolver;
 		this._cache = cache;
-		this._endpointOptions = endpointOptions;
 	}
 
 
@@ -44,7 +44,7 @@ export class LocationMediator implements Observer, Observable {
 			}
 		}
 
-		const location = await LocationRequest.fetch(ip, this.endpointOptions).catch(() => null);
+		const location = await this.locationResolver.resolve(ip).catch(() => null);
 
 		if (location !== null) {
 			outputMessage = {...location, clientId, timestamp, ip};
@@ -61,10 +61,6 @@ export class LocationMediator implements Observer, Observable {
 		return this._cache;
 	}
 
-	set cache(cache: CacheClient | null) {
-		this._cache = cache;
-	}
-
 	get observers() {
 		return this._observers;
 	}
@@ -73,7 +69,7 @@ export class LocationMediator implements Observer, Observable {
 		this._observers = observers;
 	}
 
-	get endpointOptions() {
-		return this._endpointOptions;
+	get locationResolver() {
+		return this._locationResolver;
 	}
 }
