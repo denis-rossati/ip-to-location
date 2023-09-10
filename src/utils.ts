@@ -13,7 +13,7 @@ export function getNumEnvironmentVariable(key: string): number | undefined {
 
 export function isValidJson(json: string) {
 	try {
-		return JSON.parse(json)
+		return JSON.parse(json);
 	} catch {
 		return false;
 	}

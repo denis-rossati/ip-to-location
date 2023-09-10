@@ -1,5 +1,5 @@
 import {ConsumerConfig, ConsumerRunConfig, Kafka} from 'kafkajs';
-import {LocationConsumer} from '../../../src/infrastructure/kafka';
+import {LocationConsumer} from '../../../src/infrastructure/observer';
 import {Issue, Observer} from '../../../src/types';
 
 describe('The LocationConsumer class', () => {

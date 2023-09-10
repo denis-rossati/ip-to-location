@@ -3,6 +3,7 @@ import {InMemoryProducer} from './helper/inMemoryProducer';
 import {LocationMediator} from '../src/application';
 import {CacheClient, Issue} from '../src/types';
 import {sleep} from './helper/sleep';
+import {IpStackAbstraction} from '../src/infrastructure/ipstack';
 
 describe('The application', () => {
 	let inMemoryConsumer: InMemoryConsumer;
@@ -30,7 +31,19 @@ describe('The application', () => {
 
 		inMemoryConsumer = new InMemoryConsumer();
 		inMemoryProducer = new InMemoryProducer();
-		locationMediator = new LocationMediator(cacheClient, {locationApiKey: '123', locationApiUrl: 'https://dummy.com'});
+
+		const locationProvider = new IpStackAbstraction(
+			'123',
+			'https://dummy.com',
+			{
+				city: 'string',
+				region_name: 'string',
+				country_name: 'string',
+				longitude: 'number',
+				latitude: 'number',
+			}
+		);
+		locationMediator = new LocationMediator(locationProvider, cacheClient);
 
 		inMemoryConsumer.addObserver(locationMediator);
 		locationMediator.addObserver(inMemoryProducer);
@@ -40,7 +53,7 @@ describe('The application', () => {
 
 	afterEach(() => {
 		jest.clearAllMocks();
-	})
+	});
 
 	it('Should send location with all fields filled.', async () => {
 		const issue: Issue = {
